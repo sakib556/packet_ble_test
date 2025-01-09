@@ -20,82 +20,120 @@ class BLEApp extends StatelessWidget {
             () => bleController.isConnected.value
                 ? Column(
                     children: [
-                      // Line Status Indicators
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildLineIndicator(
-                              "L1", bleController.sl1Voltage.value > 0),
-                          _buildLineIndicator(
-                              "L2", bleController.sl2Voltage.value > 0),
-                          _buildLineIndicator(
-                              "L3", bleController.sl3Voltage.value > 0),
-                          _buildLineIndicator("House", true),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Control Switches
-                      _buildControlSwitch(
-                        "Inverter",
-                        bleController.controlMode.value == 1,
-                        (value) => bleController.sendCommand(
-                            0x10, 0x04, value ? 1 : 0),
-                      ),
-                      _buildControlSwitch(
-                        "Generator",
-                        bleController.controlMode.value == 1,
-                        (value) => bleController.sendCommand(
-                            0x10, 0x05, value ? 1 : 0),
-                      ),
-                      _buildControlSwitch(
-                        "Output to House",
-                        true,
-                        (value) => bleController.sendCommand(
-                            0x10, 0x06, value ? 1 : 0),
-                      ),
-                      _buildControlSwitch(
-                        "Alarm",
-                        bleController.alarmStatus.value == 1,
-                        (value) => bleController.sendCommand(
-                            0x10, 0x19, value ? 1 : 0),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Outputs and Gauges
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildGauge(
-                              "House output",
-                              "${bleController.sl1Voltage.value}V",
-                              Colors.green),
-                          _buildGauge(
-                              "Temperature output",
-                              "${bleController.deviceTemperature.value}°C",
-                              Colors.red),
-                          _buildGauge(
-                              "Battery level",
-                              "${bleController.batteryLevel.value}%",
-                              Colors.blue),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Shutdown and Reset Buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildActionButton(
-                              "Shutdown", Icons.power_settings_new, Colors.red,
-                              () {
-                            bleController.sendCommand(0x10, 0x0C, 1);
-                          }),
-                          _buildActionButton(
-                              "Reset", Icons.refresh, Colors.green, () {
-                            bleController.sendCommand(0x10, 0x0D, 1);
-                          }),
-                        ],
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            Text(
+                                "Notification Received -> DEV_ID: ${bleController.devId.value}, "
+                                "SL1: ${bleController.sl1Status.value}, ${bleController.sl1Current.value} A, ${bleController.sl1Voltage.value} V, ${bleController.sl1Power.value} W, "
+                                "SL2: ${bleController.sl2Status.value}, ${bleController.sl2Current.value} A, ${bleController.sl2Voltage.value} V, ${bleController.sl2Power.value} W, "
+                                "SL3: ${bleController.sl3Status.value}, ${bleController.sl3Current.value} A, ${bleController.sl3Voltage.value} V, ${bleController.sl3Power.value} W, "
+                                "Alarm: ${bleController.alarmStatus.value}, Battery: ${bleController.batteryStatus.value}, "
+                                "Level: ${bleController.batteryLevel.value}%, Temp: ${bleController.deviceTemperature.value}°C, "
+                                "Mode: ${bleController.controlMode.value}"),
+                            const SizedBox(height: 16),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            //   children: [
+                            //     _buildLineIndicator(
+                            //         "L1", bleController.sl1Voltage.value > 0),
+                            //     _buildLineIndicator(
+                            //         "L2", bleController.sl2Voltage.value > 0),
+                            //     _buildLineIndicator(
+                            //         "L3", bleController.sl3Voltage.value > 0),
+                            //     _buildLineIndicator("House", true),
+                            //   ],
+                            // ),
+                            // const SizedBox(height: 16),
+                            // _buildControlSwitch(
+                            //   "Inverter",
+                            //   bleController.controlMode.value == 1,
+                            //   (value) => bleController.sendCommand(
+                            //       0x10, 0x04, value ? 1 : 0),
+                            // ),
+                            // _buildControlSwitch(
+                            //   "Generator",
+                            //   bleController.controlMode.value == 1,
+                            //   (value) => bleController.sendCommand(
+                            //       0x10, 0x05, value ? 1 : 0),
+                            // ),
+                            // _buildControlSwitch(
+                            //   "Output to House",
+                            //   true,
+                            //   (value) => bleController.sendCommand(
+                            //       0x10, 0x06, value ? 1 : 0),
+                            // ),
+                            // _buildControlSwitch(
+                            //   "Alarm",
+                            //   bleController.alarmStatus.value == 1,
+                            //   (value) => bleController.sendCommand(
+                            //       0x10, 0x19, value ? 1 : 0),
+                            // ),
+                            // const SizedBox(height: 16),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            //   children: [
+                            //     _buildGauge(
+                            //         "House output",
+                            //         "${bleController.sl1Voltage.value}V",
+                            //         Colors.green),
+                            //     _buildGauge(
+                            //         "Temperature output",
+                            //         "${bleController.deviceTemperature.value}°C",
+                            //         Colors.red),
+                            //     _buildGauge(
+                            //         "Battery level",
+                            //         "${bleController.batteryLevel.value}%",
+                            //         Colors.blue),
+                            //   ],
+                            // ),
+                            // const SizedBox(height: 16),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            //   children: [
+                            //     _buildActionButton("Shutdown",
+                            //         Icons.power_settings_new, Colors.red, () {
+                            //       bleController.sendCommand(0x10, 0x0C, 1);
+                            //     }),
+                            //     _buildActionButton(
+                            //         "Reset", Icons.refresh, Colors.green, () {
+                            //       bleController.sendCommand(0x10, 0x0D, 1);
+                            //     }),
+                            //   ],
+                            // ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              "App Flow Logs",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 400,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Obx(
+                                () => ListView.builder(
+                                  itemCount: bleController.appStatus.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4, horizontal: 8),
+                                      child: Text(
+                                        bleController.appStatus[index],
+                                        style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black87),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   )
@@ -105,7 +143,7 @@ class BLEApp extends StatelessWidget {
                       const Text("Not Connected"),
                       ElevatedButton(
                         onPressed: bleController.startScan,
-                        child: const Text("Scan and Connect"),
+                        child: const Text("Scan "),
                       ),
                       const SizedBox(height: 16),
                       Expanded(
@@ -121,6 +159,35 @@ class BLEApp extends StatelessWidget {
                                   bleController.connectToDevice(device),
                             );
                           },
+                        ),
+                      ),
+                      const Text(
+                        "App Flow Logs",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 400,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Obx(
+                          () => ListView.builder(
+                            itemCount: bleController.appStatus.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 4, horizontal: 8),
+                                child: Text(
+                                  bleController.appStatus[index],
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black87),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
