@@ -2,7 +2,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class BLEController extends GetxController {
+class SacBLEController extends GetxController {
   // Observables
   RxList<ScanResult> scannedDevices = <ScanResult>[].obs;
   RxBool isConnected = false.obs;
@@ -108,7 +108,7 @@ class BLEController extends GetxController {
           for (var characteristic in service.characteristics) {
             logStatus("service 3 ");
             if (characteristic.uuid.toString() ==
-                "4c51f3c6-bbbb-11ee-be56-0242ac120002") {
+                "4c51f3c6-cccc-11ee-be56-0242ac120002") {
               logStatus("service 4 ");
               notifyCharacteristic = characteristic;
               logStatus(
@@ -118,13 +118,13 @@ class BLEController extends GetxController {
               logStatus(
                   "Notification enabled for characteristic: ${characteristic.uuid}");
               notifyCharacteristic!.value.listen((value) {
+                print(" notification packet received : ${value.length}");
                 print(" notification packet received : ${value}");
-                logStatus(" notification packet received : ${value}");
 
                 processNotification(value);
               });
             } else if (characteristic.uuid.toString() ==
-                "4c51f3c6-cccc-11ee-be56-0242ac120002") {
+                "4c51f3c6-bbbb-11ee-be56-0242ac120002") {
               writeCharacteristic = characteristic;
               logStatus("Write characteristic found: ${characteristic.uuid}");
             }
@@ -140,48 +140,100 @@ class BLEController extends GetxController {
   }
 
   void processNotification(List<int> value) {
-    if (value.isNotEmpty && value.length >= 32) {
-      devId.value = value[0];
+    if (value.isNotEmpty) {
+      // Parse the values based on the document structure
+      final devId = value[0]; // Device Identifier
 
       // SL1
-      sl1Status.value = value[1];
-      sl1Current.value = value[2] | (value[3] << 8);
-      sl1Voltage.value = value[4] | (value[5] << 8);
-      sl1Power.value = value[6] | (value[7] << 8);
+      final sl1Status = value[1];
+      final sl1Current = value[2] | (value[3] << 8); // Combine two bytes
+      final sl1Voltage = value[4] | (value[5] << 8); // Combine two bytes
+      final sl1Power = value[6] | (value[7] << 8); // Combine two bytes
 
       // SL2
-      sl2Status.value = value[8];
-      sl2Current.value = value[9] | (value[10] << 8);
-      sl2Voltage.value = value[11] | (value[12] << 8);
-      sl2Power.value = value[13] | (value[14] << 8);
+      final sl2Status = value[8];
+      final sl2Current = value[9] | (value[10] << 8);
+      final sl2Voltage = value[11] | (value[12] << 8);
+      final sl2Power = value[13] | (value[14] << 8);
 
       // SL3
-      sl3Status.value = value[15];
-      sl3Current.value = value[16] | (value[17] << 8);
-      sl3Voltage.value = value[18] | (value[19] << 8);
-      sl3Power.value = value[20] | (value[21] << 8);
+      final sl3Status = value[15];
+      final sl3Current = value[16] | (value[17] << 8);
+      final sl3Voltage = value[18] | (value[19] << 8);
+      final sl3Power = value[20] | (value[21] << 8);
 
       // SYS
-      sysStatus.value = value[22];
-      alarmStatus.value = value[23];
-      batteryStatus.value = value[24];
-      batteryLevel.value = value[25] | (value[26] << 8);
-      deviceTemperature.value = value[27] | (value[28] << 8);
+      final sysStatus = value[22];
+      final alarmStatus = value[23];
+      final batteryStatus = value[24];
+      final batteryLevel = value[25] | (value[26] << 8);
+      final deviceTemperature = value[27] | (value[28] << 8);
 
       // Control Mode
-      controlMode.value = value[29];
+      final controlMode = value[29];
 
-      logStatus("Notification Received: DEV_ID: ${devId.value}, "
-          "SL1: ${sl1Status.value}, ${sl1Current.value} A, ${sl1Voltage.value} V, ${sl1Power.value} W, "
-          "SL2: ${sl2Status.value}, ${sl2Current.value} A, ${sl2Voltage.value} V, ${sl2Power.value} W, "
-          "SL3: ${sl3Status.value}, ${sl3Current.value} A, ${sl3Voltage.value} V, ${sl3Power.value} W, "
-          "SYS: ${sysStatus.value}, Alarm: ${alarmStatus.value}, Battery: ${batteryStatus.value}, "
-          "Battery Level: ${batteryLevel.value}%, Temp: ${deviceTemperature.value}°C, "
-          "Control Mode: ${controlMode.value}");
+      // Reserved Bytes (30-31)
+      final reservedBytes = value.sublist(30, 32);
+
+      // Log or update your UI with the parsed values
+      logStatus("Device ID: $devId");
+      logStatus(
+          "SL1 - Status: $sl1Status, Current: ${sl1Current}A, Voltage: ${sl1Voltage}V, Power: ${sl1Power}W");
+      logStatus(
+          "SL2 - Status: $sl2Status, Current: ${sl2Current}A, Voltage: ${sl2Voltage}V, Power: ${sl2Power}W");
+      logStatus(
+          "SL3 - Status: $sl3Status, Current: ${sl3Current}A, Voltage: ${sl3Voltage}V, Power: ${sl3Power}W");
+      logStatus(
+          "SYS - Status: $sysStatus, Alarm: $alarmStatus, Battery: $batteryStatus, Level: ${batteryLevel}%, Temp: ${deviceTemperature}°C");
+      logStatus("Control Mode: ${controlMode == 1 ? "Auto" : "Manual"}");
     } else {
-      logStatus("Invalid notification packet received");
+      logStatus("Invalid notification packet received: $value");
     }
   }
+
+  // void processNotification(List<int> value) {
+  //   if (value.isNotEmpty && value.length >= 32) {
+  //     devId.value = value[0];
+
+  //     // SL1
+  //     sl1Status.value = value[1];
+  //     sl1Current.value = value[2] | (value[3] << 8);
+  //     sl1Voltage.value = value[4] | (value[5] << 8);
+  //     sl1Power.value = value[6] | (value[7] << 8);
+
+  //     // SL2
+  //     sl2Status.value = value[8];
+  //     sl2Current.value = value[9] | (value[10] << 8);
+  //     sl2Voltage.value = value[11] | (value[12] << 8);
+  //     sl2Power.value = value[13] | (value[14] << 8);
+
+  //     // SL3
+  //     sl3Status.value = value[15];
+  //     sl3Current.value = value[16] | (value[17] << 8);
+  //     sl3Voltage.value = value[18] | (value[19] << 8);
+  //     sl3Power.value = value[20] | (value[21] << 8);
+
+  //     // SYS
+  //     sysStatus.value = value[22];
+  //     alarmStatus.value = value[23];
+  //     batteryStatus.value = value[24];
+  //     batteryLevel.value = value[25] | (value[26] << 8);
+  //     deviceTemperature.value = value[27] | (value[28] << 8);
+
+  //     // Control Mode
+  //     controlMode.value = value[29];
+
+  //     logStatus("Notification Received: DEV_ID: ${devId.value}, "
+  //         "SL1: ${sl1Status.value}, ${sl1Current.value} A, ${sl1Voltage.value} V, ${sl1Power.value} W, "
+  //         "SL2: ${sl2Status.value}, ${sl2Current.value} A, ${sl2Voltage.value} V, ${sl2Power.value} W, "
+  //         "SL3: ${sl3Status.value}, ${sl3Current.value} A, ${sl3Voltage.value} V, ${sl3Power.value} W, "
+  //         "SYS: ${sysStatus.value}, Alarm: ${alarmStatus.value}, Battery: ${batteryStatus.value}, "
+  //         "Battery Level: ${batteryLevel.value}%, Temp: ${deviceTemperature.value}°C, "
+  //         "Control Mode: ${controlMode.value}");
+  //   } else {
+  //     logStatus("Invalid notification packet received");
+  //   }
+  // }
 
   void monitorDeviceConnection(BluetoothDevice device) {
     device.connectionState.listen((state) {

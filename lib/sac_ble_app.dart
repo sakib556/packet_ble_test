@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'ble_controller.dart';
+import 'package:paul_ble_test/sac_ble_controller.dart';
 
-class BLEApp extends StatelessWidget {
-  final BLEController bleController = Get.put(BLEController());
+class SacBLEApp extends StatelessWidget {
+  final SacBLEController bleController = Get.put(SacBLEController());
 
   @override
   Widget build(BuildContext context) {
