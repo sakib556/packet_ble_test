@@ -55,9 +55,11 @@ class SapBleController extends GetxController {
 
     FlutterBluePlus.scanResults.listen((results) {
       for (var result in results) {
-        if (!scannedDevices.any((device) => device.device.id == result.device.id)) {
+        if (!scannedDevices
+            .any((device) => device.device.id == result.device.id)) {
           scannedDevices.add(result);
-          logStatus("Device found: ${result.device.name} (${result.device.id})");
+          logStatus(
+              "Device found: ${result.device.name} (${result.device.id})");
         }
       }
     });
@@ -93,19 +95,27 @@ class SapBleController extends GetxController {
     List<BluetoothService> services = await device.discoverServices();
 
     for (var service in services) {
+      logStatus("service.uuid : ${service.uuid.toString()}");
       if (service.uuid.toString() == "000000bb-007d-4ae5-8fa9-9fafd205e455") {
         for (var characteristic in service.characteristics) {
-          if (characteristic.uuid.toString() == "00000003-bb7d-4ae5-8fa9-9fafd205e455") {
+          logStatus(
+              "characteristic.uuid detect: : ${characteristic.uuid.toString()}");
+          if (characteristic.uuid.toString() ==
+              "00000003-bb7d-4ae5-8fa9-9fafd205e455") {
             notifyCharacteristic = characteristic;
+            logStatus(
+                "notifyCharacteristic characteristic found: ${characteristic.uuid.toString()}");
             await notifyCharacteristic?.setNotifyValue(true);
             notifyCharacteristic!.value.listen((value) {
               logStatus("Notification packet received: ${value.length} bytes");
               logStatus("Notification packet received data: ${value}");
               processNotification(value);
             });
-          } else if (characteristic.uuid.toString() == "00000002-bb7d-4ae5-8fa9-9fafd205e455") {
+          } else if (characteristic.uuid.toString() ==
+              "00000002-bb7d-4ae5-8fa9-9fafd205e455") {
             writeCharacteristic = characteristic;
-            logStatus("Write characteristic found: ${characteristic.uuid}");
+            logStatus(
+                "Write characteristic found: ${characteristic.uuid.toString()}");
           }
         }
       }
@@ -141,7 +151,6 @@ class SapBleController extends GetxController {
     upHighThresholdMv.value = (value[10] << 8) | value[11]; // 1000mV
     upLowThresholdMv.value = (value[12] << 8) | value[13]; // 10mV
 
-
     int calculatedChecksum = 0;
     for (int i = 1; i < value.length - 2; i++) {
       calculatedChecksum ^= value[i];
@@ -149,7 +158,8 @@ class SapBleController extends GetxController {
 
     int receivedChecksum = value[value.length - 2];
     if (calculatedChecksum != receivedChecksum) {
-      logStatus("Checksum mismatch! Expected: $calculatedChecksum, Received: $receivedChecksum");
+      logStatus(
+          "Checksum mismatch! Expected: $calculatedChecksum, Received: $receivedChecksum");
       return;
     }
 
@@ -163,8 +173,6 @@ class SapBleController extends GetxController {
     logStatus("Level Up High Threshold: ${upHighThresholdMv.value} mV");
     logStatus("Level Up Low Threshold: ${upLowThresholdMv.value} mV");
   }
-
-
 
   void monitorDeviceConnection(BluetoothDevice device) {
     device.connectionState.listen((state) {
